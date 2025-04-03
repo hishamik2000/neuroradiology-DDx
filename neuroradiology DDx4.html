@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuroradiology DDx - Concept 3 (Corrected)</title>
+    <style>
+        /* --- CSS Variables --- */
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --secondary-color: #2c3e50;
+            --light-bg: #f4f7f9;
+            --white-bg: #ffffff;
+            --card-bg: #fdfefe;
+            --border-color: #dfe6e9;
+            --text-color: #333;
+            --subtle-text-color: #555;
+            --accent-color: #e74c3c; /* Red for #1 etc. */
+            --success-color: #2ecc71;
+            --success-dark: #27ae60;
+            --focus-outline: 2px solid var(--primary-dark);
+            --transition-speed: 0.3s;
+            --card-shadow: 0 3px 8px rgba(0,0,0,0.07);
+            --card-hover-shadow: 0 6px 15px rgba(0,0,0,0.1);
+        }
+
+        /* --- Basic Reset & Font --- */
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; margin: 0; padding: 0; background-color: var(--light-bg); color: var(--text-color); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        .container { max-width: 1150px; margin: 30px auto; padding: 35px; background-color: var(--white-bg); box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1); border-radius: 12px; }
+
+        /* --- Titles & Attribution --- */
+        h1 { text-align: center; color: var(--secondary-color); margin-bottom: 15px; font-size: 2.5em; font-weight: 600; }
+        .attribution { text-align: center; color: var(--subtle-text-color); margin-bottom: 40px; font-size: 1.1em; }
+        .attribution strong { font-weight: 600; font-size: 1.25em; color: var(--secondary-color); }
+
+        /* --- Search Area --- */
+        .search-area { display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 35px; padding: 20px; background-color: #eef5f9; border-radius: 8px; align-items: center; border: 1px solid var(--border-color); }
+        .search-area label { font-weight: 500; color: var(--secondary-color); margin-right: 5px; flex-shrink: 0; }
+        .search-input-wrapper { display: flex; flex-grow: 1; position: relative; align-items: center; min-width: 200px; }
+        .search-area input[type="search"] { width: 100%; padding: 11px 35px 11px 15px; border: 1px solid #bdc3c7; border-radius: 6px; font-size: 1em; }
+        input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; appearance: none; }
+        .search-reset-btn { position: absolute; right: 5px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 1.4em; color: #95a5a6; cursor: pointer; padding: 0 5px; display: none; line-height: 1; z-index: 2; }
+        .search-input-wrapper input[type="search"]:not(:placeholder-shown) + .search-reset-btn { display: inline-block; }
+        .search-reset-btn:hover { color: var(--secondary-color); }
+        .search-area select { flex-shrink: 0; padding: 11px 10px; border: 1px solid #bdc3c7; border-radius: 6px; background-color: var(--white-bg); font-size: 1em; cursor: pointer; }
+
+        /* --- Accordion Button --- */
+        .accordion { background-color: var(--primary-color); color: white; cursor: pointer; padding: 18px 25px; width: 100%; border: none; text-align: left; outline: none; font-size: 1.2em; font-weight: 500; transition: background-color var(--transition-speed) ease; margin-top: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .accordion:hover { background-color: var(--primary-dark); }
+        .accordion::after { content: '+'; font-size: 1.5em; font-weight: bold; color: white; transition: transform var(--transition-speed) ease; }
+        .accordion.active::after { transform: rotate(45deg); }
+        .accordion:focus { outline: var(--focus-outline); outline-offset: 2px; }
+
+        /* --- Accordion Panel --- */
+        .panel { padding: 0 25px; background-color: var(--white-bg); max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, padding 0.4s ease-out; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 8px 8px; position: relative; }
+        .panel.show { padding: 25px; }
+
+        /* --- Hidden Data Source --- */
+        .ddx-data-source { display: none; }
+
+        /* --- Card Container --- */
+        .ddx-list { display: flex; flex-wrap: wrap; gap: 20px; padding-top: 10px; }
+        .panel.panel-focus-view .ddx-list { display: none; } /* Hide grid in focus view */
+
+        /* --- DDx Card Styling --- */
+        .ddx-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px 20px 15px 45px; flex: 1 1 300px; position: relative; cursor: pointer; transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease; box-shadow: var(--card-shadow); overflow: hidden; }
+        .ddx-card:hover { transform: translateY(-4px); box-shadow: var(--card-hover-shadow); }
+        .ddx-card:focus { outline: var(--focus-outline); outline-offset: 2px; box-shadow: var(--card-hover-shadow); }
+        .card-number { position: absolute; left: 15px; top: 15px; font-weight: bold; color: var(--primary-color); background-color: #ecf0f1; border-radius: 50%; width: 24px; height: 24px; line-height: 24px; text-align: center; font-size: 0.85em; }
+        .card-content { font-size: 0.95em; color: var(--text-color); }
+        .card-content strong { color: var(--accent-color); font-weight: 600; }
+        .ddx-card.hidden-search { display: none; } /* Hide card based on search */
+
+        /* --- Single Item Display Styling (Focus View) --- */
+        .selected-item-display { display: none; /* Hidden by default */ border: 1px solid var(--border-color); border-left: 5px solid var(--primary-color); border-radius: 8px; padding: 25px 30px; margin: 10px 0 20px 0; background-color: #f8f9fa; position: relative; box-shadow: var(--card-shadow); opacity: 0; transform: translateY(10px); transition: opacity var(--transition-speed) ease, transform var(--transition-speed) ease; }
+        .panel.panel-focus-view .selected-item-display { display: block; opacity: 1; transform: translateY(0); } /* Show in focus view */
+        .selected-item-display .item-number-display { position: absolute; left: -18px; top: 20px; font-weight: bold; color: white; background-color: var(--primary-color); border-radius: 50%; width: 36px; height: 36px; line-height: 36px; text-align: center; font-size: 1.1em; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .selected-item-display .item-content { margin-left: 30px; font-size: 1.05em; }
+        .selected-item-display .item-content strong { color: var(--accent-color); font-weight: 600; }
+
+        /* --- "Show All Cards" Button --- */
+        .show-all-btn { display: none; /* Hidden by default */ margin-top: 15px; padding: 10px 20px; background-color: var(--success-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95em; font-weight: 500; transition: background-color var(--transition-speed) ease; }
+        .panel.panel-focus-view .show-all-btn { display: inline-block; } /* Show in focus view */
+        .show-all-btn:hover { background-color: var(--success-dark); }
+        .show-all-btn::before { content: "‹ "; font-weight: bold; }
+        .show-all-btn:focus { outline: var(--focus-outline); outline-offset: 2px; }
+
+        /* --- "No Results" message styling --- */
+        .no-results { display: none; padding: 25px; text-align: center; color: var(--subtle-text-color); font-style: italic; width: 100%; margin-top: 10px; background-color: #fafafa; border-radius: 6px; }
+        .no-results.visible { display: block; } /* Controlled by JS */
+
+        /* --- Basic Responsiveness --- */
+        @media (max-width: 768px) {
+             .search-area { flex-direction: column; align-items: stretch; }
+             .search-area select { margin-left: 0; width: auto; } /* Auto width for select */
+             .search-reset-btn { right: 5px; }
+             .ddx-card { flex-basis: calc(100% - 10px); }
+             .container { padding: 20px; margin: 20px auto; }
+             h1 { font-size: 2em; }
+        }
+         @media (max-width: 480px) {
+             .search-area { gap: 10px; padding: 15px; }
+             .search-input-wrapper { min-width: unset; }
+             .search-reset-btn { font-size: 1.2em; }
+             .search-area input[type="search"] { padding: 10px 30px 10px 12px; }
+             .search-area select { padding: 10px 8px; }
+         }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Neuroradiology Differential Diagnosis</h1>
+    <p class="attribution">Collected and Prepared by <strong>Dr Hisham AlKhatib</strong>, Consultant Radiologist</p>
+
+    <!-- Search Area -->
+    <div class="search-area">
+        <label for="searchInput">Search:</label>
+        <div class="search-input-wrapper">
+             <input type="search" id="searchInput" placeholder="Enter keyword (e.g., aneurysm, tumor, mets)...">
+             <button type="button" class="search-reset-btn" aria-label="Clear search" title="Clear search">×</button>
+        </div>
+        <label for="searchScope">In:</label>
+        <select id="searchScope">
+            <option value="all" selected>All Sections</option>
+            <option value="brain">Brain DDx</option>
+            <option value="spine">Spine DDx</option>
+            <option value="headneck">Head and Neck DDx</option>
+        </select>
+    </div>
+
+    <!-- ######################## -->
+    <!-- ### BRAIN SECTION START ### -->
+    <!-- ######################## -->
+    <button class="accordion" data-section="brain" aria-controls="panel-brain">I: Brain DDx (<span class="count">0</span> differentials)</button>
+    <div class="panel" data-section="brain" id="panel-brain" aria-hidden="true">
+        <button class="show-all-btn" type="button">Show All Cards</button>
+        <div class="selected-item-display">
+             <span class="item-number-display" aria-hidden="true"></span>
+             <div class="item-content"></div>
+        </div>
+        <div class="no-results">No matching differentials found in this section.</div>
+        <div class="ddx-list"></div> <!-- Card container - Populated by JS -->
+        <ol class="ddx-data-source">
+            <!-- Paste your final Brain DDx List (51 items) below -->
+            <li>Persistent embyronic ICA to vertebrobasilar connections:  trigeminal (#1), hypoglossal, otic, proatlantic artery</li>
+            <li>Intraaxial hemorrhage:  HTN (#1), tumor, trauma, AVM, aneurysm, coagulopathy, amyloid angiopathy, emboli, hemorrhagic infarction, vasculitis, HTN encephalopathy (eclampsia, cyclosporine)</li>
+            <li>Aneurysm:  saccular – degenerative, trauma, mycotic, vasculopathies; fusiform – atherosclerotic; dissecting – trauma > vasculopathy > spontaneous</li>
+            <li>SAH:  aneurysm (#1), trauma, AVM, coagulopathy, extension of intraparenchymal bleed, idiopathic, spinal AVM</li>
+            <li>Vascular malformations:  AVM, capillary telangiectasia, cavernous malformation, venous anomaly, vein of Galen AVM or varix</li>
+            <li>Stroke:  atherosclerosis, cardiac emboli, arterial dissection, vasculopathy, IVDA, venous thrombosis, blood dyscrasias</li>
+            <li>Venous sinus thrombosis:  pregnancy, dehydration, infection, tumor, hypercoagulable state, trauma</li>
+            <li>Primary brain injury:  epidural hematoma, SDH, subdural hygroma, DAI, cortical contusion</li>
+            <li>Secondary brain injury:  cerebral herniation, diffuse cerebral edema, arterial dissection (spontaneous, trauma, HTN, vasculopathy, migraine, IVDA), CCF</li>
+            <li>Extraaxial masses:  hemisphere – meningioma, mets, lymphoma, arachnoid cyst, dermoid/epidermoid, hemorrhagic or infectious fluid collections, hemangiopericytoma; clivus/prepontine cistern – meningioma, mets, chordoma, chondrosarcoma; CPA mass – acoustic neuroma, meningioma, mets, epidermoid, petrous apex cholesterol granuloma, paraganglioma, aneurysm, arachnoid cyst</li>
+            <li>Intraaxial masses:  hemisphere – astrocytoma, GBM, oligodendroglioma, lymphoma, mets, PNET, ganglioglioma, DNET; sella – adenoma, craniopharyngioma, Rathke’s cyst, mets, abscess, sarcoid, EG stalk; brainstem – astrocytoma, GBM; pineal region – germinoma, teratoma, pineocytoma, pineoblastoma; cerebellum – astrocytoma, medulloblastoma, hemangioblastoma, mets, ependymoma, choroid plexus papilloma; temporal lobe in young patient – ganglioglioma, DNET, JPA, PXA</li>
+            <li>Multiple lesions:  tumor – mets, GBM, lymphoma; infection – abscess, fungus, cysticercosis, toxoplasmosis; vascular – embolic infarctions, multifocal hemorrhage, DAI, contusions, cavernous hemangiomas, vasculitis</li>
+            <li>Corpus callosum lesions:  tumors – GBM, lymphoma, lipoma, mets (rare); demyelinating – MS, ADEM, PML; infarct – always also involves cingulate gyrus; trauma – DAI</li>
+            <li>Intrasellar masses:  pituitary adenoma, apoplexy, craniopharyngioma, Rathke’s cyst, mets, aneurysm, abscess</li>
+            <li>Suprasellar masses:  SATCHMOE – sellar lesion extending superiorly, sarcoid, aneurysm, arachnoid cyst, teratoma, craniopharyngioma, hypothalamic glioma, mets, meningioma, optic nerve glioma, EG, epidermoid/dermoid; adults – macroadenoma (#1), meningioma, glioma, craniopharyngioma, aneurysm; children – craniopharyngioma (#1), glioma, germinoma, hypothalamic hamartoma, EG</li>
+            <li>Posterior fossa tumors:  adults – mets, hemangioblastoma, astrocytoma, choroid plexus papilloma, meningioma, epidermoid, dysplastic gangliocytoma; children -–JPA, medulloblastoma, brainstem glioma, ependymoma</li>
+            <li>Brain tumor in infant:  teratoma (#1), PNET, choroid plexus papilloma, astrocytoma</li>
+            <li>Intraventricular tumors:  adults – astrocytoma, subependymoma, meningioma, mets, cysticercosis; children – choroid plexus papilloma, ependymoma, medulloblastoma, teratoma, astrocytoma; lateral ventricle – PNET, choroid plexus papilloma, glioma, JPA, subependymoma, astrocytoma, mets, oligodendroglioma, meningioma, central neurocytoma; 3rd ventricle – astrocytoma, EG stalk, germinoma, extrinsic craniopharyngioma, colloid cyst, glioma, mets, pituitary or pineal mass, aneurysm, sarcoid; 4th ventricle – ependymoma, medulloblastoma, choroid plexus papilloma, mets, hemangioblastoma, subependymoma</li>
+            <li>CPA mass:  acoustic neuroma (#1), meningioma, epidermoid, arachnoid cyst, mets, ependymoma through Luschka, lipoma</li>
+            <li>Cystic mass:  tumor – cystic astrocytoma/GBM, hemangioblastoma, mets, necrotic pituitary adenoma, craniopharyngioma; benign – epidermoid/dermoid, arachnoid cyst, porencephalic cyst, colloid cyst, cavum variants, Rathke’s cyst, thrombosed aneurysm</li>
+            <li>Diffuse infiltrative:  lymphoma, gliomatosis cerebri, white matter disease</li>
+            <li>Restricted diffusion:  infarct, infection, possibly subacute hemorrhage</li>
+            <li>Metastasis:  intraaxial – lung, breast, colon, melanoma; extraaxial – breast, lymphoma, prostate, neuroblastoma; hemorrhagic – melanoma, renal, chorioCA, thyroid</li>
+            <li>Tumors with CSF seeding:  choroid plexus papilloma, ependymoma, PNET (medulloblastoma), piineoblastoma, germinoma, GBM</li> <!-- Item 24 -->
+            <li>Hyperdense lesion on CT:  lymphoma, medulloblastoma/PNET, ependymoma, germinoma, GBM, hemorrhagic mets, mucinous mets, osteogenic tumor, hemorrhage, meningioma, colloid cyst, aneurysm</li> <!-- Item 25 -->
+            <li>Calcified intraparenchymal lesions:  oligodendroglioma, ependymoma, mucinous adenoCA, osteogenic sarcoma, toxoplasmosis, CMV, cysticercosis, TB, AVM, aneurysm, TS, Sturge-Weber, hematoma; sellar lesions – meningioma, craniopharyngioma, germ cell tumor, aneurysm</li> <!-- Item 26 -->
+            <li>T2 hypointense lesions:  ferritin, hemosiderin, deoxyhemoglobin, intracellular methemoglobin, melanin, calcification, lymphoma, myeloma, neuroblastoma, fibrous tissue (meningioma), high protein concentration, flow void</li> <!-- Item 27 -->
+            <li>T1 hyperintense lesions:  Gd, methemoglobin, melanin, certain states of calcium, fat (dermoid), high protein concentration (colloid cyst), slow flow</li> <!-- Item 28 -->
+            <li>Lesions with no enhancement:  cysts, tumors with intact BBB (low-grade gliomas)</li> <!-- Item 29 -->
+            <li>Lesions with strong enhancement:  meningioma, medulloblastoma/PNET, AVM, paraganglioma, aneurysm, HIV-associated lymphoma, GBM</li> <!-- Item 30 -->
+            <li>Ring enhancement:  mets, abscess, GBM, infarct, contusion, AIDS, lymphoma, demyelinating, resolving hematoma, radiation</li> <!-- Item 31 -->
+            <li>Diffuse meningeal enhancement:  meningitis, carcinomatosis (lymphoma, mets), post-op, SAH, intracranial hypotension, CSF leak</li> <!-- Item 32 -->
+            <li>Basilar meningeal enhancement:  infection - TB (#1), fungal, pyogenic (more common on convexity), cysticercosis; tumor – lymphoma, leukemia, carcinomatosis; inflammatory – sarcoid, rheumatoid pachymeningitis, drugs, pantopaque, ruptured dermoid</li> <!-- Item 33 -->
+            <li>Ependymal enhancement:  tumor – lymphoma, mets, CSF seeding (PNET, GBM); infection – spread of meningitis, CMV (rare); inflammatory ventriculitis – postshunt or after instrumentation, posthemorrhage</li> <!-- Item 34 -->
+            <li>T2 hypointense basal ganglia lesions:  old age, any chronic degenerative disease (MS, Parkinson’s), childhood hypoxia</li> <!-- Item 35 -->
+            <li>T2 hyperintense basal ganglia lesions:  tumor – lymphoma, NF; ischemia – hypoxic encephalopathy, venous infarction; neurodegenerative diseases (uncommon), Leigh’s dz; toxin – CO, CN, H2S poisoning, hypoglycemia, methanol; infection – Cryptococcus, parasites</li> <!-- Item 36 -->
+            <li>T1 hyperintense basal ganglia lesions:  dystrophic calcifications (any cause), hepatic failure, NF, manganese</li> <!-- Item 37 -->
+            <li>Basal ganglia calcification:  physiologic (#1), hypoparathyroid, HPT, TORCH, AIDS, TB, toxoplasmosis, cysticercosis (common), lead, CO, radiation, chemotherapy, Fahr’s disease, mitochondrial (common), ischemic-hypoxic injury</li> <!-- Item 38 -->
+            <li>White matter disease:  demyelinating (MS, ADEM, CPM), dysmyelinating (leukodystrophies), tumor (lymphoma, mets) vasculopathies (small vessel ischemic dz, vasculitis, HTN, eclampsia, migraines, radiation, chemotherapy, cyclosporine, IVDA), inflammatory (Lyme, sarcoid, HIV, PML, CMV)</li> <!-- Item 39 -->
+            <li>Wallerian degeneration:  infarction, trauma, demyelinating, radiation, neurodegenerative, tumor</li> <!-- Item 40 -->
+            <li>Neurodegenerative disorders:  WM – demyelinating, dysmyelinating; GM – Alzheimer’s, Pick’s, multiinfarct dementia, Parkinson’s, lysosomal storage disorders, Wernicke’s, Creutzfeldt-Jakob, mesial temporal sclerosis; BG – Huntington’s, Wilson’s, Fahr’s, Leigh’s, ALS</li> <!-- Item 41 -->
+            <li>Cerebellar atrophy:  oligopontocerebellar degeneration, alcohol, dilantin, hemosiderin deposition</li> <!-- Item 42 -->
+            <li>Noncommunicating hydrocephalus:  Foramen of Monro obstruction – 3rd ventricle tumors, colloid cyst, oligodendroglioma, central neurocytoma, giant cell astrocytoma in TS, ependymoma, suprasellar tumors; aqueduct obstruction – congenital aqueductal stenosis, ventriculitis, IVH, tumor (mesencephalic, pineal, posterior 3rd ventricle region); 4th ventricle obstruction – DW malformation, IVH, infection, subependymoma, exophytic brainstem glioma, posterior fossa tumors</li> <!-- Item 43 -->
+            <li>Communicating hydrocephalus:  meningitis (infectious, carcinomatous), SAH, surgery, venous thrombosis; NPH</li> <!-- Item 44 -->
+            <li>Cystic supratentorial congenital anomalies:  holoprosencephaly, hydrancephaly, aqueductal stenosis, callosal dysgenesis, porencephaly, arachnoid cyst, cystic teratoma, epidermoid/dermoid, vein of Galen AVM</li> <!-- Item 45 -->
+            <li>Posterior fossa cystic abnormalities:  DW malformation (vermian hypoplasia/aplasia and large posterior fossa), DW variant (normal size posterior fossa and vermian hypoplasia), megacisterna magna (normal vermis), retrocerebellar arachnoid cyst (must show mass effect), Chiari 4 (near complete absence of cerebellum), epidermoid/dermoid, cystic tumor, Joubert’s syndrome (superior vermian hypoplasia/aplasia), rhomboencephalosynapsis (vermian hypoplasia/aplasia + fusion)</li> <!-- Item 46 -->
+            <li>Absent septum pellucidum:  holoprosencephaly, ACC, septooptic dysplasia, Chiari 2</li> <!-- Item 47 -->
+            <li>Migration and sulcation anomalies:  lissencephaly, schizencephaly, polymicrogyria, pachygyria, cortical heterotopia (focal, diffuse, subependymal), hemimegalencephaly</li> <!-- Item 48 -->
+            <li>Phakomatoses:  NF, TS, VHL, Sturge-Weber</li> <!-- Item 49 -->
+            <li>Diffuse marrow involvement:  mets, myeloma, lymphoma, leukemia, anemia, Paget’s, FD</li> <!-- Item 50 -->
+            <!-- Item 51 was missing in the provided list, but was correctly handled before. Assuming it's the last one -->
+            <li>Diffuse marrow involvement:  mets, myeloma, lymphoma, leukemia, anemia, Paget’s, FD</li> <!-- Item 51 -->
+        </ol>
+    </div>
+    <!-- ######################## -->
+    <!-- ### BRAIN SECTION END ### -->
+    <!-- ######################## -->
+
+     <!-- ######################## -->
+     <!-- ### SPINE SECTION START ### -->
+     <!-- ######################## -->
+    <button class="accordion" data-section="spine" aria-controls="panel-spine">II: Spine DDx (<span class="count">0</span> differentials)</button>
+    <div class="panel" data-section="spine" id="panel-spine" aria-hidden="true">
+         <button class="show-all-btn" type="button">Show All Cards</button>
+         <div class="selected-item-display"> <span class="item-number-display" aria-hidden="true"></span><div class="item-content"></div> </div>
+         <div class="no-results">No matching differentials found in this section.</div>
+         <div class="ddx-list"></div>
+         <ol class="ddx-data-source">
+           <!-- Paste your final Spine DDx List (5 items) below -->
+           <li>Spinal cord compression:  criteria – no CSF seen around cord, narrowed AP diameter of cord (<7mm), deformity of cord; causes – infection (TB, pyogenic), compression fracture (CA, trauma), spondylosis and disk disease (herniated nucleus, hypertrophy of ligaments, osteophyte, facet hypertrophy), primary bone disorders (Paget’s), epidural hematoma</li>
+           <li>Intramedullary lesions:  astrocytoma (#1), ependymoma (#2), hemangioblastoma, lymphoma, mets (rare), demyelinating disease/myelitis, syrinx, AVM, trauma (contusion), radiation, sarcoid, infection (rare), infarction</li>
+           <li>Intradural extramedullary lesions:  nerve sheath tumor (#1), meningioma, drop mets, lipoma, teratomatous lesion, arachnoid cyst, arachnoiditis/meningitis, AVM/AVF, ependymoma, sequestered disc fragment, lymphoma, sarcoid, pantopaque</li>
+           <li>Extradural lesions:  disc disease, mets, lymphoma, epidural abscess, epidural hematoma, lipomatosis (thoracic), synovial cyst, extramedullary hematopoiesis, Tarlov cyst, discitis/osteomyelitis, spondylolysis, RA</li>
+           <li>Syrinx:  primary – Chiari malformations, spinal dysraphism, DW, diastematomyelia; acquired – tumor (astrocytoma, ependymoma), trauma (spinal cord injury, vascular insult), inflammatory (arachnoiditis/meningitis, SAH)</li>
+        </ol>
+    </div>
+    <!-- ######################## -->
+    <!-- ### SPINE SECTION END ### -->
+    <!-- ######################## -->
+
+    <!-- ############################ -->
+    <!-- ### HEAD & NECK SECTION START ### -->
+    <!-- ############################ -->
+    <button class="accordion" data-section="headneck" aria-controls="panel-headneck">III: Head and Neck DDx (<span class="count">0</span> differentials)</button>
+    <div class="panel" data-section="headneck" id="panel-headneck" aria-hidden="true">
+         <button class="show-all-btn" type="button">Show All Cards</button>
+         <div class="selected-item-display"> <span class="item-number-display" aria-hidden="true"></span><div class="item-content"></div> </div>
+         <div class="no-results">No matching differentials found in this section.</div>
+         <div class="ddx-list"></div>
+         <ol class="ddx-data-source">
+            <!-- Paste your final Head & Neck DDx List (47 items) below -->
+            <li>External auditory canal:  exostoses, malignant otitis externa, atresia</li>
+            <li>Clivus mass:  chordoma, chondrosarcoma, plasmacytoma, mets, lymphoma, FD, EG</li>
+            <li>Petrous apex mass:  cholesterol granuloma, mucocele, petrous apicitis, epidermoid, mets, myeloma, chondrosarcoma, meningioma, aneurysm</li>
+            <li>Soft tissue mass in middle ear:  cholesteatoma, cholesterol granuloma, glomus tympanicum tumor, aberrant ICA, high or dehiscent jugular bulb</li>
+            <li>Intracanalicular IAC masses:  exclusively intracanalicular – acoustic neuroma, facial neuroma, hemangioma, lipoma; not primarily intracanalicular – meningioma, epidermoid</li>
+            <li>Hearing loss:  conductive – otitis media, cholesteatoma, otosclerosis, trauma (longitudinal fracture); sensorineural – idiopathic hereditary, acoustic neuroma, trauma (transverse fracture)</li>
+            <li>Pulsatile tinnitus:  aberrant ICA, jugular bulb anomalies, glomus jugulare, glomus tympanicum, AVM, ICA aneurysm at petrous apex</li>
+            <li>Jugular fossa mass:  glomus jugulare (#1), NF (#2), schwannoma, chondrosarcoma, mets</li>
+            <li>Orbital masses by etiology:  tumors – hemangioma (adults: cavernous; children: capillary), lymphoma, mets (neuroblastoma, breast), lymphangioma, rhabdomyosarcoma, hemangiopericytoma, neurofibroma; inflammatory – pseudotumor, thyroid ophthalmopathy, cellulitis, abscess, Wegener’s; vascular – carotid-cavernous fistula, venous varix, thrombosis of superior ophthalmic vein; trauma – hematoma, FB, lens dislocation</li>
+            <li>Extraconal disease:  nasal disease – infection, neoplasm; orbital bone disease – subperiosteal abscess, osteomyelitis, FD, tumors, trauma; sinus disease – mucocele, invasive infections, neoplasm; lacrimal gland disease – adenitis, lymphoma, pseudotumor, tumor</li>
+            <li>Intraconal disease:  well-defined margins – hemangioma, schwannoma, orbital varix, meningioma; ill-defined margins – pseudotumor, infection, lymphoma, mets; muscle enlargement – pseudotumor, Graves’, myositis, carotid-cavernous fistula</li>
+            <li>Vascular orbital lesions:  tumor – hemangioma, lymphangioma, hemangioendothelioma, hemangiopericytoma, meningioma, hypervascular mets; vascular (with enlarged superior ophthalmic vein) – carotid cavernous fistula, cavernous thrombosis, orbital varix, ophthalmic artery aneurysm</li>
+            <li>Optic neuritis:  abnormal T2 signal and enhancement but not enlarged – MS, sarcoid, infection</li>
+            <li>Optic neuropathy:  abnormal T2 signal only – compression, ischemia, pharmacologic, toxins, trauma</li>
+            <li>Optic nerve tumor:  abnormal T2 signal and enhancement and nerve enlarged – glioma, meningioma</li>
+            <li>Optic nerve sheath enlargement:  tumor – optic nerve glioma, meningioma, meningeal carcinomatosis, mets, lymphoma, leukemia; inflammatory – optic neuritis, pseudotumor, sarcoid; increased intracranial pressure; trauma – hematoma</li>
+            <li>Tramtrack enhancement of orbital nerve:  optic nerve meningioma, optic neuritis, idiopathic, pseudotumor, sarcoid, lymphoma, leukemia, perioptic hemorrhage, mets, normal variant</li>
+            <li>Ocular muscle enlargement:  thyroid ophthalmopathy (#1, painless), pseudotumor (painful), infection from adjacent sinus, TB, sarcoid, carotid cavernous fistula, hemorrhage, tumor</li>
+            <li>Childhood orbital masses:  retinoblastoma, rhabdomyosarcoma, optic nerve glioma, lymphoma, leukemia, hemangioma, lymphangioma, dermoid, neuroblastoma</li>
+            <li>Adult orbital masses:  hemangioma, schwannoma, melanoma, meningioma, lymphoma, pseudotumor, trauma</li>
+            <li>Cystic orbital lesions:  dermoid, epidermoid, teratoma, ABC, cholesterol granuloma, colobomatous cyst</li>
+            <li>T1 hyperintense orbital masses:  tumor – melanoma, retinoblastoma, choroidal mets, hemangioma; detachment – Coat’s disease, persistent hyperplastic primary vitreous, trauma; other – hemorrhage, phthisis bulbi</li>
+            <li>Globe calcifications:  tumor – retinoblastoma (95%), astrocytic hamartoma (TS, NF), choroidal osteoma; infection (chorioretinitis) – toxoplasmosis, herpes, CMV, rubella; other – phthisis bulbi (calcification in endstage disease, shrunken bulb), optic nerve drusen (most common cause of calcifications in adults, bilateral)</li>
+            <li>Micropthalmia:  persistent hyperplastic primary vitreous, retinopathy of prematurity, congenital rubella, phthisis bulbi</li>
+            <li>Sudden onset proptosis:  orbital varix, hemorrhage into cavernous hemangioma or lymphangioma, CCF, thrombosis of superior orbital vein</li>
+            <li>Lacrimal gland enlargement:  benign lymphoid hyperplasia, pseudotumor, sarcoid, Sjogren syndrome, pleomorphic adenoma, adenoid cystic CA, lymphoma, leukemia, dacryoadenitis</li>
+            <li>Diffuse bone abnormality:  FD, Paget’s, thalassemia, osteopetrosis, craniometaphyseal dysplasia, mets</li>
+            <li>Radioopaque sinus:  normal variant – hypoplasia, unilateral thick bone; sinusitis (acute: AFL; chronic: mucosal thickening, retention cysts) – allergic, aspergillosus, mucor, sarcoid, Wegener’s; solid masses – SCC, polyp, inverted papilloma, lymphoma, juvenile angiofibroma (most common tumor in children), mucocele (expansile, associated with CF in children), esthesioneuroblastoma, mets, osteoma, FD; postsurgical – Caldwell-Luc</li>
+            <li>Mucosal space mass:  SCC, lymphoma, rhabdomyosarcoma, melanoma, adenoids, juvenile angiofibroma, Thornwald’s cyst</li>
+            <li>Parapharyngeal and carotid space masses:  salivary gland tumors (80% benign), vagal schwannoma, cervical sympathetic plexus schwannoma, glomus vagale, nasopharyngeal CA, lymphadenopathy, abscess, cellulitis</li>
+            <li>Prevertebral mass:  mets, chordoma, osteomyelitis, abscess, hematoma</li>
+            <li>Sublingual space mass:  lymphangioma, ranula, hemangioma, lingual thyroid, inflammatory</li>
+            <li>Simultaneous sublingual and submandibular space mass:  diving ranula, lymphangioma, abscess</li>
+            <li>Post-styloid parapharyngeal mass:  salivary tissue, nerves, nodes, glomus tumor</li>
+            <li>Prestyloid parapharyngeal mass:  pleomorphic adenoma, Warthin’s, mucoepidermoid, adenoid cystic, branchial cleft cyst, neurogenic tumor, hemangioma, node</li>
+            <li>Bilateral parotid low attenuation lesions:  HIV lymphoepithelial cysts, Sjogren’s, Warthin’s tumor, infection</li>
+            <li>Enlarged parotids:  obesity, DM, alcohol, cirrhosis, malnutrition, drugs</li>
+            <li>Sialoliths:  sarcoid, Sjogren’s, HPT</li>
+            <li>Cystic extrathyroid lesions:  neck – branchial cleft cyst (lat to carotid), thyroglossal duct cyst (midline mass), ranula (retention cyst of sublingual glands), retention cysts of mucous glands (parotid), cystic hygroma (lymphangioma, most common < 2y/o); nasooropharnyx – Thornwald’s cyst, mucus retention cyst, necrotic SCC; larynx, paralaryngeal space – laryngocele, mucus retention cyst</li>
+            <li>Cystic thyroid lesions:  colloid cyst, cystic degeneration, cystic papillary tumor, cystic mets</li>
+            <li>Bilateral thyroid masses:  lymphoma, mets (RCC, lung), multiple primary tumors, MNG, thyroiditis, cysts</li>
+            <li>Neck lymphadenopathy:  enlarged Waldeyer’s ring – lymphoma, mononucleosis, HIV; skin lesions – KS, sarcoid, lymphoma, CA, cat-scratch, TB, Actinomycosis; enlarged nodular salivary glands – HIV, Sjogren, sarcoid, lymphoma, cat-scratch; calcified – thyroid CA, treated lymphoma, sarcoid, silicosis, TB</li>
+            <li>Solid neck mass:  SCC of larynx or nasooropharynx, lymphadenopathy, parotid tumor, neurofibroma, glomus tumor, dermoid, teratoma, infection, granulomatous inflammation, ectopic thyroid</li>
+            <li>Vascular head and neck mass:  glomus tumor – carotid body, vagale, jugulare, tympanicum; hemangioma; AVM; aneurysm (often ICA) – pseudoaneurysm, posttraumatic</li>
+            <li>Vocal cord paralysis:  tumor, post-op, iatrogenic, idiopathic</li>
+            <li>AIDS:  ENT complications in 50%; parotid – multiple intraparotid cystic masses (benign lymphoepithelial lesion), lymphadenopathy; sinonasal – sinusitis, KS; oral cavity – Candida, periodontal an gingival infections; pharynx/larynx – opportunistic infections, epiglottitis, lymphoma; temporal bone (rare) – otitis media, otitis externa</li>
+            <li>Odontogenic:  cysts, ameloblastoma, odontogenic carcinoma or sarcoma; nonodontogenic – osteosarcoma, chondrosarcoma, Ewing’s, myeloma</li>
+        </ol>
+    </div>
+    <!-- ############################ -->
+    <!-- ### HEAD & NECK SECTION END ### -->
+    <!-- ############################ -->
+
+
+</div> <!-- end container -->
+
+<script>
+    // --- Constants and DOM Elements ---
+    const accordions = document.querySelectorAll(".accordion");
+    const panels = document.querySelectorAll(".panel");
+    const searchInput = document.getElementById('searchInput');
+    const searchScope = document.getElementById('searchScope');
+    const searchResetBtn = document.querySelector('.search-reset-btn');
+
+    // --- Helper Functions ---
+    const formatNumber = (num) => (num < 10 ? '0' + num : num.toString());
+    const requestAnimFrame = window.requestAnimationFrame || function(callback) { window.setTimeout(callback, 16); };
+
+    // --- Dynamic Card Generation ---
+    function generateCardsFromList(panel) {
+        if (!panel) return 0; // Ensure panel exists
+        const listContainer = panel.querySelector('.ddx-list');
+        const dataSource = panel.querySelector('.ddx-data-source');
+        const accordionBtn = panel.previousElementSibling;
+        const countSpan = accordionBtn?.querySelector('.count');
+
+        if (!listContainer || !dataSource) {
+            console.error("Card generation failed: Missing .ddx-list or .ddx-data-source in panel:", panel.id);
+            return 0;
+        }
+
+        listContainer.innerHTML = ''; // Clear previous cards
+        const items = dataSource.querySelectorAll('li');
+        let itemCount = 0;
+
+        items.forEach((item) => {
+            const itemText = item.textContent || "";
+            // Generic check for placeholder/comment items
+            if (itemText.startsWith('(') || itemText.startsWith('<') || itemText.trim() === '') {
+                // console.log(`Skipping item: "${itemText.substring(0,20)}..."`); // Debug Skip
+                return;
+            }
+
+            itemCount++;
+            const itemIndex = itemCount;
+
+            const card = document.createElement('div');
+            card.className = 'ddx-card';
+            card.setAttribute('data-item-index', itemIndex);
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('role', 'button');
+            card.setAttribute('aria-label', `Differential ${itemIndex}: ${itemText.substring(0, 50)}...`);
+
+            const numberSpan = document.createElement('span');
+            numberSpan.className = 'card-number';
+            numberSpan.textContent = formatNumber(itemIndex);
+            numberSpan.setAttribute('aria-hidden', 'true');
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'card-content';
+            contentDiv.innerHTML = item.innerHTML;
+
+            card.appendChild(numberSpan);
+            card.appendChild(contentDiv);
+            listContainer.appendChild(card);
+        });
+
+         if (countSpan) {
+             countSpan.textContent = itemCount;
+         } else if (accordionBtn) { // Only warn if button exists but span doesn't
+            console.warn("Could not find count span for accordion button:", accordionBtn);
+         }
+
+         // console.log(`Generated ${itemCount} cards for section: ${panel.dataset.section}`);
+         return itemCount;
+    }
+
+    // --- Panel Height Adjustment ---
+    function adjustPanelHeight(panel) {
+        if (!panel) return;
+        // Only adjust if the panel is meant to be open
+        if (panel.classList.contains('show')) {
+            requestAnimFrame(() => {
+                const currentMaxHeight = panel.style.maxHeight;
+                // Temporarily remove maxHeight to measure natural height
+                panel.style.maxHeight = 'none';
+                const scrollHeight = panel.scrollHeight;
+                // Restore previous maxHeight briefly if needed for transition calculation?
+                // No, simpler to just set target height directly.
+                panel.style.maxHeight = scrollHeight + "px";
+                // console.log(`Adjusted height for panel ${panel.id} to ${scrollHeight}px`); // Debug height
+                // Add a check in case height calculation fails shortly after opening
+                if (panel.style.maxHeight === '0px') {
+                    requestAnimFrame(() => { panel.style.maxHeight = panel.scrollHeight + "px"; });
+                }
+            });
+        } else {
+            // If closing or closed, ensure maxHeight is null (or 0px)
+            panel.style.maxHeight = null;
+        }
+    }
+
+
+    // --- View State Management ---
+    function showCardGridView(panel) {
+        if (!panel) return;
+        const changed = panel.classList.contains('panel-focus-view');
+        panel.classList.remove('panel-focus-view');
+        if (changed) { // Only adjust height if view actually changed
+             adjustPanelHeight(panel);
+        }
+    }
+
+    function showFocusView(panel, card) {
+        if (!panel || !card) return;
+
+        const selectedDisplay = panel.querySelector('.selected-item-display');
+        const itemNumberDisplay = selectedDisplay?.querySelector('.item-number-display');
+        const itemContentDisplay = selectedDisplay?.querySelector('.item-content');
+        const showAllBtn = panel.querySelector('.show-all-btn');
+
+        if (!selectedDisplay || !itemNumberDisplay || !itemContentDisplay || !showAllBtn) {
+            console.error("showFocusView failed: Missing required child elements in panel:", panel.id);
+            return;
+        }
+
+        const itemIndex = card.getAttribute('data-item-index');
+        const cardContentElement = card.querySelector('.card-content');
+
+        if (itemIndex && cardContentElement) {
+            itemNumberDisplay.textContent = formatNumber(parseInt(itemIndex, 10));
+            itemContentDisplay.innerHTML = cardContentElement.innerHTML;
+
+            const changed = !panel.classList.contains('panel-focus-view');
+            panel.classList.add('panel-focus-view');
+
+            if (changed) { // Only adjust height if view actually changed
+                 adjustPanelHeight(panel);
+            }
+
+            requestAnimFrame(() => {
+                 try { showAllBtn.focus(); } catch(e) {}
+             });
+        } else {
+             console.error("showFocusView failed: Missing itemIndex or cardContentElement on card:", card);
+        }
+    }
+
+    function resetAllPanelsToCardView() {
+        panels.forEach(panel => {
+            showCardGridView(panel);
+            panel.querySelectorAll('.ddx-card.hidden-search').forEach(card => card.classList.remove('hidden-search'));
+            panel.querySelector('.no-results')?.classList.remove('visible');
+        });
+    }
+
+    // --- Accordion Logic ---
+    accordions.forEach(accordion => {
+        const panelId = accordion.getAttribute('aria-controls');
+        const controlledPanel = panelId ? document.getElementById(panelId) : null;
+
+        if (!controlledPanel) {
+            console.warn("Missing panel for accordion:", accordion);
+            return; // Skip adding listener if panel doesn't exist
+        }
+
+        accordion.setAttribute('aria-expanded', 'false');
+        controlledPanel.setAttribute('aria-hidden', 'true');
+
+        accordion.addEventListener("click", function() {
+            const panel = controlledPanel; // Use the already found panel
+            const isExpanded = this.getAttribute('aria-expanded') === 'true';
+
+            // Reset view to grid before toggling
+            showCardGridView(panel);
+
+            // Close other open accordions
+            accordions.forEach(acc => {
+                if (acc !== this && acc.getAttribute('aria-expanded') === 'true') {
+                    const otherPanel = document.getElementById(acc.getAttribute('aria-controls'));
+                    if (otherPanel) {
+                        acc.setAttribute('aria-expanded', 'false'); acc.classList.remove('active');
+                        showCardGridView(otherPanel); // Reset view in closing panel
+                        otherPanel.style.maxHeight = null; otherPanel.classList.remove('show'); otherPanel.setAttribute('aria-hidden', 'true');
+                    }
+                }
+            });
+
+            // Toggle current accordion
+            const willExpand = !isExpanded;
+            this.setAttribute('aria-expanded', willExpand);
+            this.classList.toggle("active", willExpand);
+            panel.setAttribute('aria-hidden', !willExpand);
+            panel.classList.toggle("show", willExpand);
+
+             if (willExpand) {
+                 adjustPanelHeight(panel); // Adjust height after making it visible
+             } else {
+                 panel.style.maxHeight = null; // Collapse
+             }
+        });
+    });
+
+    // --- Function to Open Panel (e.g., from search) ---
+    function openPanel(panel) {
+        if (!panel || !panel.classList.contains('panel')) return;
+        const accordionBtn = panel.previousElementSibling;
+
+        if (!panel.classList.contains('show')) {
+            if (accordionBtn && accordionBtn.classList.contains('accordion')) {
+                accordionBtn.click(); // Simulate a click to use the existing toggle logic
+            } else {
+                 console.warn("Could not find accordion button to click for panel:", panel.id);
+                 // Manual open as fallback (less ideal as it bypasses closing others)
+                 panel.setAttribute('aria-hidden', 'false');
+                 panel.classList.add('show');
+                 adjustPanelHeight(panel);
+            }
+        } else { // Already open, just ensure height is correct for content
+            adjustPanelHeight(panel);
+        }
+    }
+
+    // --- Single Card Interaction (Click & Keyboard) ---
+    // Use event delegation on the container for dynamically added cards
+    const container = document.querySelector('.container');
+    if (container) {
+        container.addEventListener('click', function(event) {
+            const clickedCard = event.target.closest('.ddx-card:not(.hidden-search)');
+            if (clickedCard) {
+                const panel = clickedCard.closest('.panel');
+                if (panel) {
+                    showFocusView(panel, clickedCard);
+                }
+            }
+
+            // Handle "Show All" button clicks
+             const showAllBtn = event.target.closest('.show-all-btn');
+             if (showAllBtn) {
+                 const panel = showAllBtn.closest('.panel');
+                 if (panel) {
+                     showCardGridView(panel);
+                 }
+             }
+        });
+
+        container.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                 const focusedCard = document.activeElement;
+                 if (focusedCard && focusedCard.classList.contains('ddx-card') && !focusedCard.classList.contains('hidden-search')) {
+                     const panel = focusedCard.closest('.panel');
+                      if (panel && panel.contains(focusedCard)) { // Ensure card is within a panel
+                         event.preventDefault();
+                         showFocusView(panel, focusedCard);
+                     }
+                 }
+            }
+        });
+    } else {
+         console.error("Main container not found, card interactions may fail.");
+    }
+
+
+    // --- Search Filter Logic ---
+    function filterDifferentials() {
+        // It's important to reset view *before* filtering might hide the active card list
+        resetAllPanelsToCardView();
+
+        const searchTerm = searchInput.value.toLowerCase().trim();
+        const scope = searchScope.value;
+
+        if(searchResetBtn) { searchResetBtn.style.display = searchTerm ? 'inline-block' : 'none'; }
+
+        let overallMatchesFound = false;
+
+        panels.forEach(panel => {
+            const panelSection = panel.dataset.section;
+            let panelHasVisibleItems = false;
+            const cardsInPanel = panel.querySelectorAll('.ddx-list .ddx-card'); // Select generated cards
+            const noResultsMsg = panel.querySelector('.no-results');
+
+            const isInScope = (scope === 'all' || scope === panelSection);
+
+            cardsInPanel.forEach(card => {
+                const cardContentElement = card.querySelector('.card-content');
+                const cardText = cardContentElement ? cardContentElement.textContent.toLowerCase() : '';
+                // Match if search is empty OR term is included
+                const matchesSearch = !searchTerm || cardText.includes(searchTerm);
+
+                const shouldHide = !isInScope || !matchesSearch;
+                card.classList.toggle('hidden-search', shouldHide);
+                if (!shouldHide) {
+                    panelHasVisibleItems = true;
+                    overallMatchesFound = true; // Found at least one match somewhere
+                }
+            });
+
+             if (noResultsMsg) {
+                  noResultsMsg.classList.toggle('visible', isInScope && !panelHasVisibleItems && !!searchTerm);
+              }
+
+             // Open panel ONLY if actively searching AND it's in scope AND has results
+             if (searchTerm && isInScope && panelHasVisibleItems) {
+                  openPanel(panel); // Ensures correct height for visible results
+             } else if (panel.classList.contains('show')) {
+                   // If panel is open but has no results (or search cleared), ensure height is correct
+                   adjustPanelHeight(panel);
+             }
+        });
+         // console.log("Filtering complete. Overall matches found:", overallMatchesFound); // Debug search
+    }
+
+    // --- Search Event Listeners ---
+    if (searchInput) { searchInput.addEventListener('input', filterDifferentials); }
+    else { console.error("Search input not found"); }
+
+    if (searchScope) { searchScope.addEventListener('change', filterDifferentials); }
+    else { console.error("Search scope select not found"); }
+
+    if (searchResetBtn) {
+        searchResetBtn.addEventListener('click', () => {
+            if(searchInput) { searchInput.value = ''; filterDifferentials(); searchInput.focus(); }
+        });
+    } else { console.error("Search reset button not found"); }
+
+
+    // --- Initial Setup on DOM Load ---
+    document.addEventListener('DOMContentLoaded', () => {
+        console.log("DOM Loaded. Initializing...");
+        let totalGenerated = 0;
+        try {
+            panels.forEach(panel => {
+                totalGenerated += generateCardsFromList(panel);
+            });
+            console.log(`Initialization complete. Generated ${totalGenerated} cards.`);
+            // Apply initial filter based on default scope ("all")
+            filterDifferentials();
+        } catch (error) {
+             console.error("Error during initialization:", error);
+        }
+    });
+
+</script>
+
+</body>
+</html>
